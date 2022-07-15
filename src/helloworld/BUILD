@@ -74,10 +74,16 @@ cc_binary(
     ],
 )
 
-cc_library(
+# cc_library(
+cc_binary(
     name = "greeter_server",
-    srcs = ["greeter_server.cc"],
+    srcs = [
+        "greeter_server.cc",
+        "greeter_server.h",
+    ],
     defines = ["BAZEL_BUILD"],
+    linkstatic = 1,
+    linkshared = True,
     deps = [
         "@com_github_grpc_grpc//:grpc++",
         "@com_github_grpc_grpc//:grpc++_reflection",

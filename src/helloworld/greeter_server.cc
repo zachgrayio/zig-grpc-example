@@ -26,6 +26,7 @@
 
 #ifdef BAZEL_BUILD
 #include "src/protos/helloworld.grpc.pb.h"
+#include "src/helloworld/greeter_server.h"
 #else
 #include "helloworld.grpc.pb.h"
 #endif
@@ -48,8 +49,7 @@ class GreeterServiceImpl final : public Greeter::Service {
   }
 };
 
-void RunServer() {
-  std::string server_address("0.0.0.0:50051");
+void RunServer(std::string server_address) {
   GreeterServiceImpl service;
 
   grpc::EnableDefaultHealthCheckService(true);
@@ -69,8 +69,7 @@ void RunServer() {
   server->Wait();
 }
 
-int main(int argc, char** argv) {
-  RunServer();
-
+int runBlocking(char* server_address) {
+  RunServer(std::string(server_address));
   return 0;
 }

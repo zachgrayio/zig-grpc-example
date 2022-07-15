@@ -16,7 +16,10 @@ pub fn build(b: *std.build.Builder) void {
     greeter_server.addPackagePath("clap", "deps/zig-clap/clap.zig");
     greeter_server.linkLibC();
     greeter_server.linkLibCpp();
+    greeter_server.addIncludePath("src/helloworld");
+    greeter_server.addIncludePath("bazel-bin");
     greeter_server.addIncludePath("bazel-bin/src/protos");
+    greeter_server.addObjectFile("bazel-bin/src/helloworld/libgreeter_server.so");
     greeter_server.setTarget(target);
     greeter_server.setBuildMode(mode);
     greeter_server.install();

@@ -74,8 +74,8 @@ class GreeterClient {
 
 const char* sayHello(char* target, char* user) {
   // return strdup(std::string("test").c_str());
-  // std::cout << "test from cc" << std::endl;
+  auto user_string = strdup(std::string(user).c_str());
   GreeterClient greeter(grpc::CreateChannel(std::string(target), grpc::InsecureChannelCredentials()));
-  std::string reply = greeter.SayHello(std::string(user));
+  std::string reply = greeter.SayHello(user_string);
   return strdup(reply.c_str());
 }

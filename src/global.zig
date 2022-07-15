@@ -12,3 +12,7 @@ pub const grpc = @cImport({
 pub const greeter_client = @cImport({
     @cInclude("greeter_client.h");
 });
+
+pub const greeter_server = @cImport({
+    @cInclude("greeter_server.h");
+});

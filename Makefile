@@ -12,7 +12,7 @@ run_greeter_server: build
 
 .PHONY: run_greeter_client
 run_greeter_client: build
-	zig build run_greeter_client -- --port=8000
+	sleep 3 && zig build run_greeter_client -- --port=8000
 
 .PHONY: clean
 clean:

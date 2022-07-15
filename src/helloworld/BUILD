@@ -15,9 +15,17 @@
 licenses(["notice"])
 
 cc_binary(
+# cc_library(
     name = "greeter_client",
-    srcs = ["greeter_client.cc"],
+    srcs = [
+        "greeter_client.h",
+        "greeter_client.cc",
+    ],
+    # hdrs = ["greeter_client.h"],
     defines = ["BAZEL_BUILD"],
+    linkstatic = 1,
+    linkshared = True,
+    # alwayslink = True,
     deps = [
         "@com_github_grpc_grpc//:grpc++",
         "//src/protos:helloworld_cc_grpc",
@@ -66,7 +74,7 @@ cc_binary(
     ],
 )
 
-cc_binary(
+cc_library(
     name = "greeter_server",
     srcs = ["greeter_server.cc"],
     defines = ["BAZEL_BUILD"],

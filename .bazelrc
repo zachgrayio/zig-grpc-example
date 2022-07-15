@@ -1,0 +1,6 @@
+# todo: add this line back when Zig toolchain is working for gRPC builds
+#build --action_env BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1
+
+build --cxxopt='-std=c++14'
+build --copt=-DGRPC_BAZEL_BUILD
+build --disk_cache=~/.cache/zig_grpc_example_bazel

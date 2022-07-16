@@ -1,5 +1,20 @@
 const std = @import("std");
 
+fn commonExeConfig(exe: *std.build.LibExeObjStep, bazel_obj_name: [] const u8) !void {
+    exe.addPackagePath("clap", "deps/zig-clap/clap.zig");
+    exe.linkLibC();
+    exe.linkLibCpp();
+    exe.addIncludePath("src/helloworld");
+    exe.addIncludePath("bazel-bin");
+    exe.addIncludePath("bazel-bin/src/protos");
+
+    var buf: [200]u8 = undefined;
+    const bufs = buf[0..];
+    // hack: use a `cc_binary` linked with linkstatic and linkshared to build a self-contained .so:
+    const obj_file = try std.fmt.bufPrint(bufs, "bazel-bin/src/helloworld/lib{s}.so", .{bazel_obj_name});
+    exe.addObjectFile(obj_file);
+}
+
 pub fn build(b: *std.build.Builder) void {
     // Standard target options allows the person running `zig build` to choose
     // what target to build for. Here we do not override the defaults, which
@@ -12,14 +27,10 @@ pub fn build(b: *std.build.Builder) void {
     const mode = b.standardReleaseOptions();
 
     // Greeter server
-    const greeter_server = b.addExecutable("greeter_server", "src/greeter_server.zig");
-    greeter_server.addPackagePath("clap", "deps/zig-clap/clap.zig");
-    greeter_server.linkLibC();
-    greeter_server.linkLibCpp();
-    greeter_server.addIncludePath("src/helloworld");
-    greeter_server.addIncludePath("bazel-bin");
-    greeter_server.addIncludePath("bazel-bin/src/protos");
-    greeter_server.addObjectFile("bazel-bin/src/helloworld/libgreeter_server.so");
+    var greeter_server = b.addExecutable("greeter_server", "src/greeter_server.zig");
+    commonExeConfig(greeter_server, "greeter_server") catch |err| {
+        std.log.err("build error: {e}", .{err});
+    };
     greeter_server.setTarget(target);
     greeter_server.setBuildMode(mode);
     greeter_server.install();
@@ -40,41 +51,11 @@ pub fn build(b: *std.build.Builder) void {
     const test_greeter_server_step = b.step("test_greeter_server", "Run unit tests");
     test_greeter_server_step.dependOn(&greeter_server_tests.step);
 
-    // const c_flags = [_][]const u8{
-    //     "-std=c++14",
-    //     "-fvisibility=hidden",
-    //     "-Wall",
-    //     "-Werror=strict-prototypes",
-    //     "-Werror=old-style-definition",
-    //     "-Werror=missing-prototypes",
-    //     "-Wno-missing-braces",
-    //     // "-DBAZEL_BUILD=1"
-    // };
-        
     // Greeter client
     const greeter_client = b.addExecutable("greeter_client", "src/greeter_client.zig");
-    greeter_client.addPackagePath("clap", "deps/zig-clap/clap.zig");
-    greeter_client.linkLibC();
-    greeter_client.linkLibCpp();
-    
-    greeter_client.addIncludePath("src/helloworld");
-    greeter_client.addIncludePath("bazel-bin");
-    greeter_client.addIncludePath("bazel-bin/src/protos");
-
-    // build greeter client CC with zig; an alternative to linking against the bazel-built version.
-    // note this doesn't quite work, as we'd need to link against more objectsin bazel-out manually.
-    // greeter_client.defineCMacro("BAZEL_BUILD", "1");
-    // greeter_client.addIncludePath("./");
-    // greeter_client.addCSourceFile("src/helloworld/greeter_client.cc", &c_flags);
-    // greeter_client.addIncludePath("bazel-zig-grpc-example/external/com_github_grpc_grpc/include");
-    // greeter_client.addIncludePath("bazel-zig-grpc-example/external/com_google_absl");
-    // greeter_client.addIncludePath("bazel-zig-grpc-example/external/com_google_protobuf/src");
-
-    // hack: use a `cc_binary` linked with linkstatic and linkshared to build a self-contained .so:
-    greeter_client.addObjectFile("bazel-bin/src/helloworld/libgreeter_client.so");
-    // instead of the more obvious
-    // greeter_client.addObjectFile("bazel-bin/src/helloworld/libgreeter_client.a");
-
+    commonExeConfig(greeter_client, "greeter_client") catch |err| {
+        std.log.err("build error: {e}", .{err});
+    };
     greeter_client.setTarget(target);
     greeter_client.setBuildMode(mode);
     greeter_client.install();

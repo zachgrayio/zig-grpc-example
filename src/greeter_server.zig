@@ -8,10 +8,9 @@ const grpc = global.grpc;
 const greeter_server = global.greeter_server;
 
 pub fn main() !void {
-    const alloc = std.heap.c_allocator;
     const args = try cli.parseArgs();
-    const server_address = try fmt.allocPrint(alloc, "0.0.0.0:{any}", .{args.port});
-    defer alloc.free(server_address);
+    var sb = [_]u8{0} ** 14;
+    const server_address = try fmt.bufPrint(&sb, "0.0.0.0:{any}", .{args.port});
     debug("Greeter Server - Running on {s}", .{server_address});
     const res: c_int = greeter_server.runBlocking(server_address.ptr); // this call blocks
     debug("server exited with code {any}", .{res});

@@ -49,27 +49,51 @@ class GreeterServiceImpl final : public Greeter::Service {
   }
 };
 
-void RunServer(std::string server_address) {
-  GreeterServiceImpl service;
+class GreeterServer {
+  private:
+    GreeterServiceImpl service;
+    ServerBuilder builder;
+    std::string server_address;
 
-  grpc::EnableDefaultHealthCheckService(true);
-  grpc::reflection::InitProtoReflectionServerBuilderPlugin();
-  ServerBuilder builder;
-  // Listen on the given address without any authentication mechanism.
-  builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
-  // Register "service" as the instance through which we'll communicate with
-  // clients. In this case it corresponds to an *synchronous* service.
-  builder.RegisterService(&service);
-  // Finally assemble the server.
-  std::unique_ptr<Server> server(builder.BuildAndStart());
-  std::cout << "Server listening on " << server_address << std::endl;
+  public:
+    GreeterServer(std::string a) {
+      this->server_address = a;
+      grpc::EnableDefaultHealthCheckService(true);
+      grpc::reflection::InitProtoReflectionServerBuilderPlugin();
+      // Listen on the given address without any authentication mechanism.
+      builder.AddListeningPort(this->server_address, grpc::InsecureServerCredentials());
+      // Register "service" as the instance through which we'll communicate with
+      // clients. In this case it corresponds to an *synchronous* service.
+      builder.RegisterService(&service);
+    }
 
-  // Wait for the server to shutdown. Note that some other thread must be
-  // responsible for shutting down the server for this call to ever return.
-  server->Wait();
+    void Start() {
+      // Finally assemble the server.
+      std::unique_ptr<Server> server(builder.BuildAndStart());
+      // std::cout << "Server listening on " << this->server_address << std::endl;
+      // Wait for the server to shutdown. Note that some other thread must be
+      // responsible for shutting down the server for this call to ever return.
+      server->Wait();
+    }
+};
+
+struct greeter_server {
+	void *obj;
+};
+
+greeter_server_t *greeter_server_create(char* server_address) {
+	auto g = (struct greeter_server *)malloc(sizeof(struct greeter_server));
+	g->obj = new GreeterServer(std::string(server_address));
+	return g;
 }
 
-int runBlocking(char* server_address) {
-  RunServer(std::string(server_address));
-  return 0;
+void greeter_server_destroy(greeter_server_t *g) {
+	if (g == NULL) return;
+	delete static_cast<GreeterServer *>(g->obj);
+	free(g);
+}
+
+void greeter_server_start(greeter_server_t *g) {
+	if (g == NULL) return;
+	static_cast<GreeterServer *>(g->obj)->Start();
 }

@@ -9,10 +9,7 @@ pub const grpc = @cImport({
     @cInclude("keyvaluestore.grpc.pb.h");
 });
 
-pub const greeter_client = @cImport({
+pub const greeter = @cImport({
     @cInclude("greeter_client.h");
-});
-
-pub const greeter_server = @cImport({
     @cInclude("greeter_server.h");
 });

@@ -5,7 +5,12 @@
 extern "C" {
 #endif
 
-const char* sayHello(char* target, char* user);
+struct greeter_client;
+typedef struct greeter_client greeter_client_t;
+
+greeter_client_t *greeter_client_create(char* target);
+void greeter_client_destroy(greeter_client_t *g);
+const char* greeter_client_say_hello(greeter_client_t *g, char* user);
 
 #ifdef __cplusplus
 }

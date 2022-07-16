@@ -5,7 +5,12 @@
 extern "C" {
 #endif
 
-int runBlocking(char* server_address);
+struct greeter_server;
+typedef struct greeter_server greeter_server_t;
+
+greeter_server_t *greeter_server_create(char* server_address);
+void greeter_server_destroy(greeter_server_t *g);
+void greeter_server_start(greeter_server_t *g);
 
 #ifdef __cplusplus
 }

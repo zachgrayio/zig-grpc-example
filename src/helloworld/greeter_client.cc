@@ -72,8 +72,24 @@ class GreeterClient {
   std::unique_ptr<Greeter::Stub> stub_;
 };
 
-const char* sayHello(char* target, char* user) {
-  GreeterClient greeter(grpc::CreateChannel(std::string(target), grpc::InsecureChannelCredentials()));
-  std::string reply = greeter.SayHello(strdup(user));
+struct greeter_client {
+	void *obj;
+};
+
+greeter_client_t *greeter_client_create(char* target) {
+	auto g = (struct greeter_client *)malloc(sizeof(struct greeter_client));
+	g->obj = new GreeterClient(grpc::CreateChannel(std::string(target), grpc::InsecureChannelCredentials()));
+	return g;
+}
+
+void greeter_client_destroy(greeter_client_t *g) {
+	if (g == NULL) return;
+	delete static_cast<GreeterClient *>(g->obj);
+	free(g);
+}
+
+const char* greeter_client_say_hello(greeter_client_t *g, char* user) {
+	if (g == NULL) return "";
+	std::string reply = static_cast<GreeterClient *>(g->obj)->SayHello(strdup(user));
   return strdup(reply.c_str());
 }
